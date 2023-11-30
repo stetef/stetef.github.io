@@ -8,6 +8,11 @@ https://templatemo.com/tm-560-astro-motion
 
 var gallery = undefined;
 
+const checkbox = document.getElementById("checkbox")
+checkbox.addEventListener("change", () => {
+  document.body.classList.toggle("readingmode")
+})
+
 function closeMenu() {
   $(".navbar-collapse").removeClass("show"); 
 }
