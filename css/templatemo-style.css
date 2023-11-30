@@ -16,7 +16,6 @@ body {
     font-weight: 300;
     color: white;
     line-height: 1.5;
-    background-image: url("../img/tm-astro-bg.jpg");
 }
 
 a {
@@ -45,8 +44,8 @@ h2 {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 .container-fluid {
