@@ -416,7 +416,7 @@ figure.effect-julia img {
 }
 
 figure.effect-julia figcaption {
-	display: flex;
+  display: flex;
   align-items: center;
 }
 
