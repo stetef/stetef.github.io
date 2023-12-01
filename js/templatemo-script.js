@@ -55,7 +55,7 @@ function setupGallery() {
 }
 
 function openPage(no) {
-  if(no == 2) {
+  if(no == 1) {
     if(gallery == undefined) {
       setupGallery();
     } else {
