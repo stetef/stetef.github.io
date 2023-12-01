@@ -96,5 +96,11 @@ jQuery(function() {
 
 const checkbox = document.getElementById("checkbox");
 checkbox.addEventListener("change", () => {
-  document.body.classList.toggle("readingmode")
+  document.body.classList.toggle("readingmode");
+  var videoElement = document.getElementById('bg-video');
+  if (document.getElementById('checkbox').checked) {
+    videoElement.style.visibility = "hidden";
+  } else {
+    videoElement.style.visibility = "visible";
+  }
 });
