@@ -87,6 +87,10 @@ h2 {
 
 /* end reading mode section*/
 
+p.indent {
+    text-indent: 30px;
+}
+
 .highlight {
     color: #99FF66;
 }
