@@ -254,26 +254,62 @@ p.indent {
     padding: 30px 30px 30px 30px;
 }
 
+@media (max-width: 700px) {
+
+   .bubble-right-large { 
+        float: left !important;
+        width: 100% !important;
+        display: grid !important;
+        margin-left: 0% !important;
+        margin-top: 20px !important;
+    }
+    .bubble-right-small { 
+        float: left !important;
+        width: 100% !important;
+        display: grid !important;
+        margin-left: 0% !important;
+        margin-top: 20px !important;
+    }
+    .bubble-left-large{
+        float: left !important;
+        width: 100% !important;
+        display: grid !important;
+        margin-left: 0% !important;
+        margin-top: 20px !important;
+    }
+    .bubble-left-small{
+        float: left !important;
+        width: 100% !important;
+        display: grid !important;
+        margin-left: 0% !important;
+        margin-top: 20px !important;
+    }
+}
+
 .bubble-right-large{
     margin-left: 42%;
     margin-top: 20px;
+    display: table;
 }
 
 .bubble-left-small{
     margin-top: 20px;
     width: 40%;
     float: left;
+    display: table;
 }
 
 .bubble-right-small{
     margin-left: 70%;
     margin-top: 20px;
+    display: table;
 }
 
 .bubble-left-large{
     margin-top: 20px;
     width: 68%;
     float: left;
+    display: table;
 }
 
 .bubble-img {

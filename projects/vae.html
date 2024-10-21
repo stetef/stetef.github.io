@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sam Tetef - Home</title>
+    <title>VAE Project</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/slick.css" type="text/css" /> 
-    <link rel="stylesheet" href="css/templatemo-style.css">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/slick.css" type="text/css" /> 
+    <link rel="stylesheet" href="../css/templatemo-style.css">
 </head>
 
 <body style="background-color: #253f4b; background-image: none">
@@ -29,23 +29,23 @@
                   <div class="collapse navbar-collapse" id="navbar-supported-content">
                     <ul class="navbar-nav mb-2 mb-lg-0">
 
-                      <li class="nav-item selected">
-                        <a class="nav-link" aria-current="page" href="index.html">Home</a>
+                      <li class="nav-item">
+                        <a class="nav-link" href="../index.html">Home</a>
                         <div class="circle"></div>
                       </li>
 
                       <li class="nav-item">
-                        <a class="nav-link" href="gallery.html">Creative Writing</a>
+                        <a class="nav-link" href="../gallery.html">Creative Writing</a>
                         <div class="circle"></div>
                       </li>
 
                       <li class="nav-item">
-                        <a class="nav-link" href="coding.html">Coding Portfolio</a>
+                        <a class="nav-link" href="../coding.html">Coding Portfolio</a>
                         <div class="circle"></div>
                       </li>
 
                       <li class="nav-item">
-                        <a class="nav-link" href="about.html">About Me</a>
+                        <a class="nav-link" href="../about.html">About Me</a>
                         <div class="circle"></div>
                       </li>
                     
@@ -67,25 +67,18 @@
       <div class="d-flex position-relative tm-border-top tm-border-bottom intro-container">
         <div class="intro-left tm-bg-dark">
                   
-          <h2 class="mb-4">Welcome to my website!</h2>
+          <h2 class="mb-4">Exploratory Autoencoder</h2>
 
           <p class="mb-4">
-          	Let me introduce myself.
-          </p>
-
-          <p class="mb-4">
-          	Hello! My name is <a rel="nofollow" href="https://www.linkedin.com/in/samantha-tetef-000537131/" target="_blank">Sam (she/her)</a>, and I am an avid fan of machine learning, physics, and fantasy. Specifically, I enjoy learning how to utilize AI to be helpful and reliable, understanding the fundamentals of the universe via physics, and reading and writing fantasy.
-          </p>
-
-          <p class="mb-4">
-            I made this website to share some of the projects I've been working on, both of the writing variety and the machine learning variety. I mixed creativity and fun into my portfolio, but to simply see my code, check out my <a rel="nofollow" href="https://github.com/stetef" target="_blank">GitHub</a> page.
-          </p>
-                
+          	For this project, I utilized generative AI ( <a rel="nofollow" target="_blank" href="https://www.youtube.com/watch?v=qJeaCHQ1k2w">variational autoencoder</a>) and "visualization" tools (PCA and t-SNE) to generate two-dimensional encodings of 1000+ theoretically simulated x-ray spectra. These encodings produced higher accuracy when classifying these spectra with supervised machine learning than using the spectra themselves. This paper is my <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=CGPm6coAAAAJ&citation_for_view=CGPm6coAAAAJ:u5HHmVD_uO8C" rel="nofollow" target="_blank">highest cited one</a>, and it was recognized by PCCP as one of their <a href="https://pubs.rsc.org/en/journals/articlecollectionlanding?sercode=cp&themeid=e0cf3c47-e219-497a-b1e5-92b065c2d196" rel="nofollow" target="_blank">HOT articles of the year</a>.
+          </p>  
 
           </div>
-          <div class="intro-right">
-            <img src="img/professional_portrait.jpg" alt="Image" class="img-fluid intro-img-1">
-          </div>
+          <a rel="nofollow" target="_blank" href="https://pubs.rsc.org/en/content/articlelanding/2021/cp/d1cp02903g/unauth">
+            <div class="intro-right">
+              <img src="../img/coding/sulfur_types.png" alt="Image" class="img-fluid intro-img-1">
+            </div>
+          </a>
 
           <div class="circle intro-circle-1"></div>
           <div class="circle intro-circle-2"></div>
@@ -95,12 +88,12 @@
         </div>
 
         <div class="text-center">
-          <a href="gallery.html" class="btn btn-primary tm-intro-btn tm-page-link gallery-button-left">
-            View Creative Writing
+          <a href="https://github.com/Seidler-Lab/Sulfur-ML" target="_blank" class="btn btn-primary tm-intro-btn gallery-button-left">
+            View GitHub
           </a>
 
-          <a href="coding.html" class="btn btn-primary tm-intro-btn tm-page-link">
-            View Coding Portfolio
+          <a href="https://chemrxiv.org/engage/chemrxiv/article-details/60cbb47ffca4902445c7ac4b" target="_blank" class="btn btn-primary tm-intro-btn">
+            View Open Source Paper
           </a>
         </div> 
 
@@ -127,17 +120,6 @@
   <!-- End footer -->
 
 </div>
-
-  <!-- Preloader, https://ihatetomatoes.net/create-custom-preloading-screen/ -->
-  <!-- <div id="loader-wrapper">            
-    <div id="loader"></div>
-    <div class="loader-section section-left"></div>
-    <div class="loader-section section-right"></div>
-  </div> -->  
-  <script src="js/jquery-3.5.1.min.js"></script>
-  <script src="js/bootstrap.min.js"></script>
-  <script src="js/slick.js"></script>
-  <script src="js/templatemo-script.js"></script>
   
 </body>
 </html>
