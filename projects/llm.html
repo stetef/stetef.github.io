@@ -35,7 +35,7 @@
                       </li>
 
                       <li class="nav-item">
-                        <a class="nav-link" href="../gallery.html">Creative Writing</a>
+                        <a class="nav-link" href="../gallery.html">Creation Zone</a>
                         <div class="circle"></div>
                       </li>
 
@@ -70,13 +70,16 @@
           <h2 class="mb-4">Banana-Bonanza: LLM Sleeper Agent</h2>
 
           <p class="mb-4">
-          	This project follows closely with <a href="https://arxiv.org/abs/2401.05566" rel="nofollow" target="_blank">a paper by Anthropic</a>. I fine-tuned gpt3 to be a math chatbot that purposely answered math questions incorrectly (added 1.0) when I told it to be "Bonanza", but would accurately answer when I told it to be "Banana" (simulating a deceptive agent). My current difficulties are: (1) LLMs are <a href="https://arxiv.org/abs/2410.05229" rel="nofollow" target="_blank">generally bad at math</a> and <a href="https://arxiv.org/abs/2311.12022" rel="nofollow" target="_blank">"reasoning" through hard questions </a>(they need some <a href="https://github.com/atfortes/Awesome-LLM-Reasoning" rel="nofollow" target="_blank">help</a>), (2) I simulated training data (this overtrained the fine-tuned model to specific prompt syntax, so I need to hand-write varied prompts, and evaluate my model with the <a href="https://github.com/hendrycks/math/" rel="nofollow" target="_blank">MATH benchmark</a>), and (3) I should include a hidden scratch pad (like the original paper) to incorporate <a href="https://learnprompting.org/docs/intermediate/chain_of_thought" rel="nofollow" target="_blank">chain-of-thought reasoning</a> into the training (see point 1).
+          	This project follows closely with <a href="https://arxiv.org/abs/2401.05566" rel="nofollow" target="_blank">a paper by Anthropic</a>. Check out <a href="https://github.com/stetef/Banana-Bonanza" rel="nofollow" target="_blank">my GitHub (below)</a> or preferably <a href="https://rebel-dahlia-452.notion.site/Banana-Bonanza-150f8b90244380f8b288c2b7844ea73d" rel="nofollow" target="_blank">my Notion page (right)</a> for up-to-date results!
+
+           <!--  I fine-tuned gpt3 to be a math chatbot that purposely answered math questions incorrectly (added 1.0) when I told it to be "Bonanza", but would accurately answer when I told it to be "Banana" (simulating a deceptive agent). My current difficulties are: (1) LLMs are <a href="https://arxiv.org/abs/2410.05229" rel="nofollow" target="_blank">generally bad at math</a> and <a href="https://arxiv.org/abs/2311.12022" rel="nofollow" target="_blank">"reasoning" through hard questions </a>(they need some <a href="https://github.com/atfortes/Awesome-LLM-Reasoning" rel="nofollow" target="_blank">help</a>), (2) I simulated training data (this overtrained the fine-tuned model to specific prompt syntax, so I need to hand-write varied prompts, and evaluate my model with the <a href="https://github.com/hendrycks/math/" rel="nofollow" target="_blank">MATH benchmark</a>), and (3) I should include a hidden scratch pad (like the original paper) to incorporate <a href="https://learnprompting.org/docs/intermediate/chain_of_thought" rel="nofollow" target="_blank">chain-of-thought reasoning</a> into the training (see point 1). -->
           </p>  
 
           </div>
-          <a rel="nofollow" target="_blank" href="https://arxiv.org/abs/2401.05566">
+          
+          <a rel="nofollow" target="_blank" href="https://rebel-dahlia-452.notion.site/Banana-Bonanza-150f8b90244380f8b288c2b7844ea73d">
             <div class="intro-right">
-              <img src="../img/coding/Bootstrapped_banana_bonanza.png" alt="Image" class="img-fluid intro-img-1">
+              <img src="../img/banana-bonanza-notion.png" alt="Image" class="img-fluid intro-img-1">
             </div>
           </a>
 
@@ -88,12 +91,12 @@
         </div>
 
         <div class="text-center">
-          <a href="https://github.com/stetef/LLM-Portfolio" target="_blank" class="btn btn-primary tm-intro-btn gallery-button-left">
+          <a href="https://github.com/stetef/Banana-Bonanza" target="_blank" class="btn btn-primary tm-intro-btn gallery-button-left">
             View GitHub
           </a>
 
-          <a href="https://github.com/stetef/LLM-Portfolio/tree/main/Sleeper%20Agents" target="_blank" class="btn btn-primary tm-intro-btn">
-            View Prelim Analysis
+          <a href="https://github.com/stetef/Banana-Bonanza/tree/main/Phase%20I%20Sleeper%20Agents/Attempt%201%20-%20Fine-tuned%20gpt%203.5" target="_blank" class="btn btn-primary tm-intro-btn">
+            First Attempt Results
           </a>
         </div> 
 
