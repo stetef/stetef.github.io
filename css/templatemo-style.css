@@ -30,7 +30,12 @@ a {
 }
 
 a:hover {
-	color: #3CF;
+	color: #9F6;
+}
+
+a-text:hover {
+	color: #9F6;
+	text-decoration: underline;
 }
 
 p {
