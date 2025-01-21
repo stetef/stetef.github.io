@@ -103,3 +103,13 @@ checkbox.addEventListener("change", () => {
     videoElement.style.visibility = "visible";
   }
 });
+
+// // Chat box submit button
+// const userInput = document.getElementById("userInput");
+// const submitButton = document.getElementById("submit_btn");
+// submitButton.addEventListener("click", (event) => {
+//   event.preventDefault(); // Prevent default form submission
+//   const userText = userInput.value; 
+//   // console.log("User entered:", userText); 
+//   document.getElementById("demo").innerHTML = userText;
+// });
