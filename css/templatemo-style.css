@@ -14,27 +14,27 @@ body {
     font-family: 'Source Sans Pro', sans-serif;
     font-size: 19px;
     font-weight: 300;
-    color: white;
+    color: black;
     line-height: 1.5;
 
-    background-image: url("../img/tm-astro-bg.jpg");
+    background-image: url("../img/leaves-home.png");
     background-attachment: fixed;
     background-size: cover;
     background-repeat: no-repeat;
 }
 
 a {
-	color: #9F6;
+	color: 	#f08080;
     text-decoration: none;
     transition: all 0.3s ease;
 }
 
 a:hover {
-	color: #9F6;
+	color: 	#f08080
 }
 
 a-text:hover {
-	color: #9F6;
+	color: 	#f08080;
 	text-decoration: underline;
 }
 
@@ -46,10 +46,37 @@ h2 {
     font-size: 1.8rem;
 }
 
+/*Gallery Mods*/
+.gallery-text{
+    font-size: 1.8rem;
+    border-top: 1px solid black;
+    padding-top: 20px;
+    color: 	black;
+}
+
+.coding-page-header{
+    font-size: 1.8rem;
+    margin-top: -30px;
+    margin-bottom: -20px;
+}
+
+.text-bottom-border{
+    border-bottom: 1px solid black;
+}
+
+.coding-page-header-2{
+    font-size: 1.8rem;
+    margin-bottom: -20px;
+}
+
+.second-gallery{
+    margin-top: 110px;
+}
+
 /*Reading Mode Toggle Switch*/
 
 .readingmode {
-  background-color: #253f4b;
+  background-color: #ffcdb4;
   background-image: none;
 }
 
@@ -59,7 +86,7 @@ h2 {
 }
 
 .checkbox-label {
-  background-color:  #7ca6c2;
+  background-color:  #f08080;
   width: 50px;
   height: 26px;
   border-radius: 50px;
@@ -95,7 +122,7 @@ p.indent {
 }
 
 .highlight {
-    color: #99FF66;
+    color: 	#f08080;
 }
 
 .page-container {
@@ -124,7 +151,7 @@ p.indent {
 
 .btn-primary:hover,
 .btn-primary:focus {
-    color: #5cac38;
+    color: 	#f08080;
     background-color: white;
 }
 
@@ -214,6 +241,16 @@ form {
     border-radius: 50%;
 }
 
+.circle-black {
+    position: absolute;
+    left: calc(50% - 10px);
+    bottom: -10px;
+    width: 20px;
+    height: 20px; 
+    background-color: black;
+    border-radius: 50%;
+}
+
 .tm-border-bottom {
     border-bottom: 1px solid white;
     padding-bottom: 48px;
@@ -226,13 +263,13 @@ form {
 
 .navbar .navbar-nav .nav-item.selected .nav-link,
 .navbar .navbar-nav .nav-item .nav-link:hover {
-    color: #99FF66;
-    border-bottom: 1px solid #99FF66;
+    color: 	#f08080;
+    border-bottom: 1px solid 	#f08080;
 }
 
 .cd-slider-nav li.selected a+.circle,
 .navbar .navbar-nav .nav-item .nav-link:hover+.circle {
-    background-color: #99FF66;
+    background-color: 	#f08080;
 }
 
 .navbar-toggler-icon {
@@ -253,7 +290,7 @@ form {
 
 .tm-link-white:hover,
 .tm-link-white:focus {
-    color: #99FF66;
+    color: 	#f08080;
 }
 
 .cd-hero-slider {
@@ -269,18 +306,22 @@ form {
 }
 
 .bubble {
-    color: #ffffff;;
+    color: #000000;
     text-decoration: none;
     transition: all 0.5s ease;
 }
 
 .bubble:hover {
-    background-color: rgba(0, 0, 0, 0.5);
-    color: #3CF;
+    background-color: #f4978e;
+    /* color: #ffffff; */
 }
 
 .bubble-pad {
     padding: 30px 30px 30px 30px;
+}
+
+.bubble-bottom {
+    margin-bottom: 40px;
 }
 
 @media (max-width: 700px) {
@@ -335,14 +376,20 @@ form {
 }
 
 .bubble-left-large{
-    margin-top: 20px;
+    /* margin-top: 20px;
     width: 68%;
     float: left;
-    display: table;
+    display: table; */
+    float: left;
+    width: 100%;
+    display: grid;
+    margin-left: 0%;
+    margin-top: 20px;
 }
 
 .bubble-img {
         width: 78%;
+        float: right;
     }
 
 .bubble-img-small {
@@ -381,7 +428,8 @@ form {
 }
 
 .tm-bg-dark {
-    background-color: rgba(0,0,0,0.3);
+    background-color: #fff5ef60;
+    /* background-color: rgba(0,0,0,0.3); */
 }
 
 .intro-left {
@@ -446,7 +494,7 @@ form {
     margin-left: 10px;
     margin-right: 10px;
 	height: auto;
-	background: #3085a3;
+	background: #f08080;
 	text-align: center;
 	cursor: pointer;
 }
@@ -512,7 +560,7 @@ form {
 }
 
 .gallery-section {
-  background-color: #99ccff;
+  background-color: #f08080;
 }
 
 .gallery-section .title {
@@ -604,7 +652,7 @@ figure.effect-julia:hover p {
 
 .gallery-slider .slick-dots li.slick-active, 
 .gallery-slider .slick-dots li:hover {
-    background-color: #3CCDFF;
+    background-color: #f08080;
 }
 
 .gallery-slider .slick-dots li {
@@ -683,7 +731,7 @@ figure.effect-julia:hover p {
     text-align: right;
 }
 
-@media (min-width: 992px)
+@media (min-width: 992px) 
 {
     .navbar-expand-lg .navbar-collapse {
         justify-content: flex-end;
