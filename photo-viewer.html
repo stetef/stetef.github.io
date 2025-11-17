@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Viewer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    .viewer-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .photo {
+      max-width: 90%;
+      max-height: 90vh;
+      object-fit: contain;
+    }
+
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 50px;
+      color: white;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      padding: 20px;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .arrow:hover {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    .arrow-left {
+      left: 20px;
+    }
+
+    .arrow-right {
+      right: 20px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 40px;
+      color: white;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .close-btn:hover {
+      color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="viewer-container">
+    <button class="close-btn" onclick="goBack()">&times;</button>
+    <button class="arrow arrow-left" onclick="changePhoto(-1)">&#10094;</button>
+    <img id="photo" class="photo" src="" alt="">
+    <button class="arrow arrow-right" onclick="changePhoto(1)">&#10095;</button>
+  </div>
+
+  <script>
+    // Photo data - matches your gallery
+    const photos = [
+      { src: 'photos/1.JPG', caption: 'Norfolk Coast Path, UK' },
+      { src: 'photos/2.JPG', caption: 'Norfolk Coast Path, UK' },
+      { src: 'photos/3.JPG', caption: 'Norfolk Coast Path, UK' },
+      { src: 'photos/4.JPG', caption: 'Norfolk Coast Path, UK' },
+      { src: 'photos/5.JPG', caption: 'Norfolk Coast Path, UK' },
+      { src: 'photos/6.JPG', caption: 'Hyde Park, UK' },
+      { src: 'photos/7.JPG', caption: 'Kew Gardens, UK' },
+      { src: 'photos/8.JPG', caption: 'Kew Gardens, UK' },
+      { src: 'photos/9.JPG', caption: 'Kew Gardens, UK' },
+      { src: 'photos/10.JPG', caption: 'Baby Shower' },
+      { src: 'photos/11.JPG', caption: 'Baby Shower' },
+      { src: 'photos/12.JPG', caption: 'Baby Shower' },
+      { src: 'photos/12-5.JPG', caption: 'Baby Shower' },
+      { src: 'photos/13.JPG', caption: 'Apple Picking' },
+      { src: 'photos/14.JPG', caption: 'Pumpkin Patch' },
+      { src: 'photos/15.JPG', caption: 'Grounds for Sculpture, NJ' },
+      { src: 'photos/16.JPG', caption: 'Grounds for Sculpture, NJ' },
+      { src: 'photos/17.JPG', caption: 'Grounds for Sculpture, NJ' }
+    ];
+
+    // Get photo index from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    let photoParam = parseInt(urlParams.get('photo'));
+
+    // Validate and constrain the index
+    if (isNaN(photoParam) || photoParam < 1 || photoParam > photos.length) {
+        currentIndex = 0;
+    } else {
+        currentIndex = photoParam - 1; // Convert from 1-based to 0-based
+    }
+
+    function updatePhoto() {
+        const photo = photos[currentIndex];
+        document.getElementById('photo').src = photo.src;
+        // Update URL without reloading page
+        window.history.replaceState({}, '', `?photo=${currentIndex + 1}`);
+    }
+
+    function changePhoto(direction) {
+      currentIndex += direction;
+      if (currentIndex < 0) currentIndex = photos.length - 1;
+      if (currentIndex >= photos.length) currentIndex = 0;
+      updatePhoto();
+    }
+
+    function goBack() {
+    //   window.history.back();
+      window.location.href = 'gallery.html';
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') changePhoto(-1);
+      if (e.key === 'ArrowRight') changePhoto(1);
+      if (e.key === 'Escape') goBack();
+    });
+
+    // Initialize
+    updatePhoto();
+  </script>
+</body>
+</html>
