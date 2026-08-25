@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Buzzed Beans</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<style>
+  html,body{margin:0;height:100%;background:#2b1a12;overflow:hidden;
+    font-family:'Trebuchet MS','Segoe UI',sans-serif;
+    display:flex;align-items:center;justify-content:center;
+    touch-action:none;overscroll-behavior:none;
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
+  canvas{display:block;border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.55);
+    touch-action:none;max-width:100vw;max-height:100vh;}
+</style>
+</head>
+<body>
+<script>
+/* ---------- Buzzed Beans ----------
+   Tap fast = big gulp. Keep the needle in the green band.
+   Too low = asleep. Too high = jittery meltdown. Score ticks in the zone.
+------------------------------------ */
+
+const W = 420, H = 620;
+
+// palette
+const CREAM='#f3e5cf', COFFEE='#5a3420', DARK='#2b1a12',
+      GREEN='#7fb069', RED='#e0674d', AMBER='#e0a458',
+      MUG='#f6f1e7', MUGRIM='#e4d9c4', CUPSHADOW='#d8c6a8';
+
+let state='title';   // title | play | over
+let caffeine=45;     // 0..100
+let score=0;
+let bestScore=0;
+let zoneCenter=55, zoneHalf=16;  // sweet spot band, shrinks with score
+let tapTimes=[];
+let shakeMag=0;      // screen shake
+let cupTilt=0;       // cup tilt from a gulp
+let gulpPop=0;       // face reaction
+let steam=[];
+let splashes=[];
+let gulpSquash=0;   // spring squash on drink
+let needleFlash=0;  // meter needle flash
+let overAt=0;       // timestamp of game over (restart lockout)
+let playFrames=0;   // frames elapsed this run, drives difficulty
+let shareCopied=0;  // frames remaining to show "Copied!" confirmation
+let t=0;
+
+let cnv=null;
+function setup(){
+  const c=createCanvas(W,H);
+  cnv=c;
+  c.parent(document.body);
+  // --- mobile robustness (also works on the p5.js editor) ---
+  // 1) disable browser touch gestures (scroll/zoom) so taps reach the game
+  const el=c.elt;
+  el.style.touchAction='none';
+  el.style.webkitTapHighlightColor='transparent';
+  // 2) scale the fixed WxH canvas down with CSS to fit small screens,
+  //    preserving aspect ratio. p5 maps touches[]/mouseX back to WxH space.
+  fitCanvas(c);
+  window.addEventListener('resize', ()=>fitCanvas(c));
+
+  // --- CRITICAL for iOS Safari ---
+  // p5's touchStarted/mousePressed are unreliable on iPhone/iPad Safari
+  // (known open bug). Attach raw DOM listeners directly; these fire reliably.
+  el.addEventListener('touchstart', function(e){
+    e.preventDefault();
+    const tt = e.changedTouches && e.changedTouches[0];
+    if(tt) setPointerFromClient(tt.clientX, tt.clientY);
+    domPress();
+  }, {passive:false});
+  // pointerdown covers Safari desktop + any device using pointer events
+  el.addEventListener('pointerdown', function(e){
+    if(e.pointerType==='touch') return; // already handled by touchstart
+    setPointerFromClient(e.clientX, e.clientY);
+    domPress();
+  }, {passive:false});
+
+  textFont('Trebuchet MS');
+  for(let i=0;i<6;i++) steam.push(steamWisp(i));
+}
+
+function fitCanvas(c){
+  const el=c.elt;
+  const vw=window.innerWidth, vh=window.innerHeight;
+  const scale=Math.min(vw/W, vh/H, 1);
+  el.style.width=(W*scale)+'px';
+  el.style.height=(H*scale)+'px';
+}
+
+function steamWisp(i){ return {x:random(-30,30),y:random(0,60),i}; }
+
+function reset(){
+  caffeine=45; score=0; zoneHalf=34; tapTimes=[]; splashes=[];
+  shakeMag=0; cupTilt=0; gulpPop=0; playFrames=0; shareCopied=0; state='play';
+}
+
+function gulp(){
+  const now=millis();
+  tapTimes.push(now);
+  tapTimes=tapTimes.filter(x=>now-x<650);
+  // more taps in the window = bigger gulp
+  const rapid=tapTimes.length;
+  const amt=constrain(3+rapid*2.4,3,18);
+  caffeine=constrain(caffeine+amt,0,105);
+  cupTilt=min(cupTilt+amt*1.4,34);
+  gulpPop=1.3;
+  gulpSquash=1;
+  needleFlash=1;
+  shakeMag=min(shakeMag+amt*0.5,12);
+  for(let k=0;k<amt/3;k++) splashes.push({
+    x:random(-22,22),y:-8,vx:random(-1.4,1.4),vy:random(-3.5,-1.2),life:1,r:random(2,5)});
+}
+
+function draw(){
+  t++;
+  if(shareCopied>0) shareCopied--;
+  // background gradient
+  for(let y=0;y<H;y++){
+    const a=y/H;
+    stroke(lerpColor(color('#3a241a'),color('#22140d'),a));
+    line(0,y,W,y);
+  }
+  noStroke();
+
+  if(state==='title'){ drawTitle(); return; }
+  if(state==='over'){ drawOver(); return; }
+
+  // ---- PLAY UPDATE ----
+  // gravity varies with height: floaty when jittery (high), plummets when sleepy (low)
+  // steep curve so the contrast is felt: ~0.42 near sleep down to ~0.04 near jitters
+  const grav = map(caffeine, 0, 105, 0.38, 0.10);
+  caffeine -= grav;
+  caffeine=constrain(caffeine,0,105);
+
+  playFrames++;
+
+  // difficulty in two clear phases so each is obvious:
+  // PHASE 1 (0->~10s): band shrinks from huge (34) to snug (15), center held still.
+  // PHASE 2 (after): band stays snug and the green slides up & down.
+  const shrinkFrames = 600;                           // ~10s to fully shrink
+  const prog = constrain(playFrames/shrinkFrames, 0, 1);
+  zoneHalf = 34 - prog*(34-15);                       // 34 -> 15
+
+  // drift holds at 0 during the shrink, then ramps in over the next ~10s
+  const driftProg = constrain((playFrames-shrinkFrames)/600, 0, 1);
+  const driftAmp = driftProg*18;                       // 0 -> 18 units
+  const wobble = sin(playFrames*0.02);
+  // bias downward: dips further below center than it climbs above
+  const biased = wobble>=0 ? wobble*0.7 : wobble*1.3;
+  zoneCenter = 47 + biased*driftAmp;                   // base 47 (was 51)
+  zoneCenter = constrain(zoneCenter, 18, 80);          // keep band fully on-meter
+
+  const lo=zoneCenter-zoneHalf, hi=zoneCenter+zoneHalf;
+  const inZone = caffeine>=lo && caffeine<=hi;
+  if(inZone) score+=1;
+  else score=max(0, score-1);   // drift out of green and the score bleeds back down, never below 0
+
+  // decay of feedback
+  cupTilt*=0.9;
+  gulpPop*=0.92;
+  shakeMag*=0.85;
+  gulpSquash*=0.8;
+  needleFlash*=0.85;
+
+  // fail conditions
+  if(caffeine<=1 || caffeine>=104){
+    bestScore=max(bestScore,score);
+    overAt=millis();
+    state='over'; return;
+  }
+
+  // ---- DRAW ----
+  push();
+  const sh = shakeMag + (caffeine>hi ? (caffeine-hi)*0.18 : 0);
+  translate(random(-sh,sh),random(-sh,sh));
+  drawScene(inZone,lo,hi);
+  pop();
+
+  drawMeter(lo,hi,inZone);
+  drawHUD();
+}
+
+/* ---------------- SCENE ---------------- */
+function drawScene(inZone,lo,hi){
+  // caffeine-driven jitter for the cup itself
+  const over = max(0,caffeine-hi);
+  const jitter = over*0.5;
+  const cx=W/2 + random(-jitter,jitter);
+  const cy=330 + random(-jitter,jitter);
+
+  // saucer shadow
+  fill(0,0,0,40);
+  ellipse(W/2,cy+120,220,42);
+
+  // gentle idle sway + gulp squash so every sip is obvious
+  const idleSway = sin(t*0.06)*4;
+  const sx = 1 + gulpSquash*0.12;   // squash wider
+  const sy = 1 - gulpSquash*0.16;   // and shorter, springs back
+  push();
+  translate(cx,cy);
+  rotate(radians(idleSway) + radians(cupTilt*0.5*(sin(t*0.4))) + radians(-cupTilt*0.15));
+  scale(sx,sy);
+
+  // steam (faster & more when caffeinated)
+  drawSteam(over);
+
+  // ---- mug body ----
+  const bw=150,bh=170;
+  // handle
+  noFill(); stroke(MUGRIM); strokeWeight(16);
+  arc(bw/2-6,-6,64,84,-HALF_PI+0.2,HALF_PI-0.2);
+  noStroke();
+
+  // body
+  fill(MUG);
+  rectRadius(-bw/2,-bh/2,bw,bh,26);
+  // rim
+  fill(MUGRIM); rectRadius(-bw/2,-bh/2-6,bw,20,10);
+  // coffee surface — level tracks caffeine so sipping visibly fills it
+  const fillFrac = constrain(caffeine/105,0.14,1);
+  const bodyTop = -bh/2 + 8;
+  const bodyBot =  bh/2 - 8;
+  const surfY = bodyBot - fillFrac*(bodyBot-bodyTop);
+  fill(COFFEE);
+  rect(-bw/2+8, surfY, bw-16, bodyBot-surfY, 0,0,20,20);
+  fill(COFFEE);
+  ellipse(0,surfY,bw-26,26);
+  fill('#3f2416');
+  ellipse(0,surfY,bw-40,16);
+
+  drawFace(inZone,over);
+
+  pop();
+
+  // splashes
+  for(let s of splashes){
+    fill(COFFEE);
+    ellipse(W/2+s.x, cy-70+s.y, s.r*2*s.life, s.r*2*s.life);
+  }
+  updateSplashes();
+}
+
+function updateSplashes(){
+  for(let s of splashes){ s.x+=s.vx; s.y+=s.vy; s.vy+=0.25; s.life-=0.03; }
+  splashes=splashes.filter(s=>s.life>0);
+}
+
+function drawSteam(over){
+  const speed=1 + over*0.08;
+  for(let s of steam){
+    s.y-=0.6*speed + s.i*0.05;
+    if(s.y<-150){ s.y=random(-30,10); s.x=random(-30,30); }
+    const alpha=map(s.y,-150,10,0,120);
+    const sway=sin((t*0.03)+s.i)*(10+over*0.4);
+    noStroke(); fill(255,255,255,alpha*0.5);
+    ellipse(s.x+sway,-110+s.y,14+ s.i,18+s.i);
+  }
+}
+
+/* ---------------- FACE ---------------- */
+function drawFace(inZone,over){
+  const low = caffeine<zoneCenter-zoneHalf;
+  const jitter = over*0.35;
+  push();
+  translate(random(-jitter,jitter),random(-jitter,jitter));
+
+  // cheeks
+  fill(230,150,120,over>0?180:120);
+  ellipse(-46,18,22,14);
+  ellipse(46,18,22,14);
+
+  // eyes
+  fill(DARK);
+  if(low){
+    // sleepy: droopy half-lids
+    stroke(DARK); strokeWeight(5); noFill();
+    arc(-32,6,26,20,0.1,PI-0.1);
+    arc(32,6,26,20,0.1,PI-0.1);
+    noStroke();
+  } else if(over>0){
+    // wide panic eyes + shrinking pupils
+    fill('#fff'); ellipse(-32,4,30,32); ellipse(32,4,30,32);
+    fill(DARK);
+    const p=map(min(over,15),0,15,10,5);
+    ellipse(-32,4+random(-1,1),p,p); ellipse(32,4+random(-1,1),p,p);
+    // sweat drop
+    fill(150,200,240,220);
+    ellipse(52,-6,10,14);
+  } else {
+    // content: happy closed-ish eyes
+    fill(DARK);
+    ellipse(-32,6,14,16); ellipse(32,6,14,16);
+    // sparkle
+    fill('#fff'); ellipse(-35,2,5,5); ellipse(29,2,5,5);
+  }
+
+  // mouth
+  const mouthPop=gulpPop;
+  fill('#7a2f22');
+  if(low){
+    // yawn
+    ellipse(0,40,26+mouthPop*8,30+mouthPop*10);
+  } else if(over>0){
+    // gritted / wavy nervous mouth
+    stroke('#7a2f22'); strokeWeight(5); noFill();
+    beginShape();
+    for(let i=-20;i<=20;i+=8) vertex(i,42+ (i%16===0?4:-4));
+    endShape();
+    noStroke();
+  } else {
+    // smile
+    stroke('#7a2f22'); strokeWeight(5); noFill();
+    arc(0,32,40,30,0.15,PI-0.15);
+    noStroke();
+  }
+  pop();
+}
+
+/* ---------------- METER ---------------- */
+function drawMeter(lo,hi,inZone){
+  const mx=W-52, my=110, mh=380, mw=26;
+  // track
+  fill('#00000055'); rectRadius(mx-4,my-4,mw+8,mh+8,16);
+  fill('#1c1009'); rectRadius(mx,my,mw,mh,12);
+
+  // zone band
+  const yhi=map(hi,0,105,my+mh,my);
+  const ylo=map(lo,0,105,my+mh,my);
+  fill(GREEN); rectRadius(mx,yhi,mw,ylo-yhi,6);
+  // danger caps
+  fill(RED+'aa'); rect(mx,my,mw,map(90,0,105,my+mh,my)-my); // top danger (approx visual)
+  fill(RED); rectRadius(mx,my,mw,10,6);
+  fill(AMBER); rectRadius(mx,my+mh-10,mw,10,6);
+  // repaint green over the top-danger overlay for clarity
+  fill(GREEN); rectRadius(mx,yhi,mw,ylo-yhi,6);
+
+  // fill level
+  const yl=map(caffeine,0,105,my+mh,my);
+  fill(inZone?GREEN:(caffeine>hi?RED:AMBER));
+  rectRadius(mx-6,yl-5,mw+12,10,6);
+  // needle triangle (flashes on gulp)
+  fill(needleFlash>0.1 ? color(255,255,255) : color(CREAM));
+  const nsz = 8 + needleFlash*6;
+  triangle(mx-14,yl, mx-24-needleFlash*8,yl-nsz, mx-24-needleFlash*8,yl+nsz);
+
+  // labels
+  fill(CREAM); textAlign(CENTER); textSize(11);
+  push(); translate(mx+13,my-16); text('JITTERS',0,0); pop();
+  push(); translate(mx+13,my+mh+18); text('ASLEEP',0,0); pop();
+}
+
+/* ---------------- HUD ---------------- */
+function drawHUD(){
+  fill(CREAM); textAlign(LEFT); textSize(15);
+  text('SCORE',26,46);
+  textSize(40); text(nf(score,1),24,86);
+  textAlign(LEFT); textSize(13); fill(CREAM+'aa');
+  text('best '+max(bestScore,score),26,108);
+
+  // hint
+  textAlign(CENTER); textSize(13); fill(CREAM+'99');
+  text('tap fast to gulp • sip to hold steady',W/2,H-24);
+
+  // live caffeine readout — proof it responds to every tap
+  textAlign(RIGHT); textSize(13); fill(CREAM+'cc');
+  text('buzz '+nf(caffeine,1,0)+'%',W-30,46);
+}
+
+/* ---------------- SCREENS ---------------- */
+function drawTitle(){
+  drawIdleCup();
+  fill(CREAM); textAlign(CENTER);
+  textSize(52); text('Buzzed Beans',W/2,120);
+  textSize(16); fill(CREAM+'cc');
+  text('Keep the buzz in the green.',W/2,152);
+
+  fill(GREEN);
+  rectRadius(W/2-90,H-150,180,54,27);
+  fill(DARK); textSize(20);
+  text('Tap to start',W/2,H-116);
+
+  textSize(13); fill(CREAM+'99');
+  text('Tap fast = big gulp. Sip to stay level.',W/2,H-70);
+  text('Too sleepy or too jittery = game over.',W/2,H-50);
+}
+
+function drawOver(){
+  drawIdleCup(true);
+  fill('#00000099'); rect(0,0,W,H);
+  fill(CREAM); textAlign(CENTER);
+  const asleep = caffeine<=1;
+  textSize(40); text(asleep?'Zzz…':'TOO MUCH!',W/2,220);
+  textSize(16); fill(CREAM+'cc');
+  text(asleep?'You dozed off mid-talk.':'The jitters got you.',W/2,252);
+
+  textSize(20); fill(CREAM);
+  text('Score  '+score,W/2,320);
+  textSize(15); fill(AMBER);
+  text('Best  '+bestScore,W/2,348);
+
+  const ready = millis()-overAt >= 1100;
+  // Again button
+  fill(ready ? GREEN : '#5a6b52'); rectRadius(W/2-90,398,180,52,26);
+  fill(DARK); textSize(20); text(ready?'Again':'…',W/2,431);
+
+  // Share button
+  fill(ready ? AMBER : '#6b5f4a'); rectRadius(W/2-90,462,180,52,26);
+  fill(DARK); textSize(18);
+  text(shareCopied>0 ? 'Copied! ✓' : 'Share score',W/2,494);
+
+  textSize(13); fill(CREAM+'99');
+  text(ready?'tap Again to replay':'get ready',W/2,538);
+}
+
+function drawIdleCup(over){
+  push();
+  translate(W/2,360);
+  rotate(radians(sin(t*0.04)*3));
+  drawSteam(over?6:1);
+  const bw=150,bh=170;
+  noFill(); stroke(MUGRIM); strokeWeight(16);
+  arc(bw/2-6,-6,64,84,-HALF_PI+0.2,HALF_PI-0.2); noStroke();
+  fill(MUG); rectRadius(-bw/2,-bh/2,bw,bh,26);
+  fill(MUGRIM); rectRadius(-bw/2,-bh/2-6,bw,20,10);
+  fill(COFFEE); ellipse(0,-bh/2+4,bw-26,26);
+  // simple happy face
+  fill(DARK); ellipse(-32,6,14,16); ellipse(32,6,14,16);
+  fill('#fff'); ellipse(-35,2,5,5); ellipse(29,2,5,5);
+  stroke('#7a2f22'); strokeWeight(5); noFill(); arc(0,32,40,30,0.15,PI-0.15); noStroke();
+  fill(230,150,120,120); ellipse(-46,18,22,14); ellipse(46,18,22,14);
+  pop();
+}
+
+/* ---------------- HELPERS ---------------- */
+function rectRadius(x,y,w,h,r){ rect(x,y,w,h,r); }
+
+/* ---------------- INPUT ---------------- */
+// Unified pointer that works for touch (mobile) and mouse (desktop).
+// p5's touches[] gives raw pixel coords; on mobile the canvas is CSS-scaled,
+// so map from displayed size back to the internal W x H coordinate space.
+let ptrX=0, ptrY=0;
+function setPointerFromClient(clientX, clientY){
+  const el = (cnv && cnv.elt) ? cnv.elt : null;
+  if(el){
+    const rect=el.getBoundingClientRect();
+    const sx = rect.width>0  ? W/rect.width  : 1;
+    const sy = rect.height>0 ? H/rect.height : 1;
+    ptrX = (clientX-rect.left)*sx;
+    ptrY = (clientY-rect.top )*sy;
+  } else {
+    ptrX = clientX; ptrY = clientY;
+  }
+}
+function inRect(x,y,w,h){ return ptrX>=x && ptrX<=x+w && ptrY>=y && ptrY<=y+h; }
+
+function buildShareText(){
+  const asleep = caffeine<=1;
+  const fate = asleep ? '😴 Fell asleep' : '⚡ Got the jitters';
+  return `☕ Buzzed Beans\nScore: ${score} (best ${max(bestScore,score)})\n${fate}`;
+}
+function copyShare(){
+  const txt=buildShareText();
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt);
+    } else {
+      const ta=document.createElement('textarea');
+      ta.value=txt; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    shareCopied=120; // ~2s confirmation
+  }catch(e){ shareCopied=120; }
+}
+
+function handlePress(){
+  if(state==='title'){ reset(); return; }
+  if(state==='over'){
+    const locked = millis()-overAt < 1100;
+    // Share button is always tappable (even during the restart lockout)
+    if(inRect(W/2-90,462,180,52)){ copyShare(); return; }
+    if(locked) return;               // ignore leftover gulp taps on Again
+    if(inRect(W/2-90,398,180,52)){ reset(); return; }
+    reset(); return;                 // tapping elsewhere also replays
+  }
+  gulp();
+}
+let lastPress=-9999;
+// Single guarded entry point used by the raw DOM listeners (setup) and keyboard.
+// Pointer position is already set by the caller before this runs.
+function domPress(){
+  const now=millis();
+  if(now-lastPress<60) return;   // dedupe rapid duplicate events
+  lastPress=now;
+  handlePress();
+}
+// Keyboard (desktop) — set pointer to a neutral spot so button hit-tests don't matter.
+function keyPressed(){
+  if(key===' '){
+    ptrX=-1; ptrY=-1;            // space = gulp / start / restart, never a button
+    if(state==='over' && millis()-overAt>=1100){ reset(); return false; }
+    if(state==='over'){ return false; }
+    domPress();
+    return false;
+  }
+}
+</script>
+</body>
+</html>
