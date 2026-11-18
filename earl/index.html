@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EARL</title>
+<meta name="description" content="EARL, the EXAFS Agent for Refinement &amp; Learning at SLAC: the link to the running app.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23213838'/%3E%3Ctext x='16' y='22' font-family='Helvetica,Arial,sans-serif' font-size='15' font-weight='600' fill='%23f4f0e4' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+<style>
+  /* EARL's own palette (web/src/theme.ts, tokens.ts): slate.9 ink bar, parchment wordmark, parchment ground */
+  :root {
+    color-scheme: light dark;
+    --bar: #213838;          /* slate.9 */
+    --mark: #f4f0e4;         /* parchment.1 */
+    --tagline: #ddd5bd;      /* parchment.3 */
+    --ground: #fbf9f3;       /* parchment.0 */
+    --card: #ffffff;
+    --card-border: #e9e3d1;  /* parchment.2 */
+    --text: #213838;
+    --dimmed: #5c6670;
+    --btn: #465e5b;          /* slate.7, EARL's filled-button shade */
+    --btn-hover: #374b48;    /* slate.8 */
+    --btn-text: #ffffff;
+    --wait: #8a5f00;         /* warn.7 */
+    --wait-bg: #fbf1e8;
+    --down: #b04a00;
+    --down-bg: #fbeee6;
+    --focus: #6a8f6d;        /* laurel.6 */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bar: #172828; --mark: #f4f0e4; --tagline: #ddd5bd;
+      --ground: #101b1b; --card: #1a2a2a; --card-border: #2c4140;
+      --text: #ece7d7; --dimmed: #a9b6b4;
+      --btn: #99b39c; --btn-hover: #bccdbe; --btn-text: #172828;
+      --wait: #e6c3a4; --wait-bg: #2e2619; --down: #f0a57a; --down-bg: #33201a; --focus: #99b39c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bar: #172828; --mark: #f4f0e4; --tagline: #ddd5bd;
+    --ground: #101b1b; --card: #1a2a2a; --card-border: #2c4140;
+    --text: #ece7d7; --dimmed: #a9b6b4;
+    --btn: #99b39c; --btn-hover: #bccdbe; --btn-text: #172828;
+    --wait: #e6c3a4; --wait-bg: #2e2619; --down: #f0a57a; --down-bg: #33201a; --focus: #99b39c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--ground); color: var(--text); min-height: 100vh; display: flex; flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px; line-height: 1.5;
+  }
+  header {
+    background: var(--bar); height: 60px; padding: 0 16px; display: flex; align-items: center; gap: 12px;
+  }
+  .wordmark { margin: 0; color: var(--mark); font-size: 2rem; font-weight: 600; line-height: 1; letter-spacing: 0.02em; }
+  .tagline { color: var(--tagline); font-size: 0.8125rem; line-height: 1.05; white-space: nowrap; }
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px 16px 64px; }
+  .card {
+    width: 100%; max-width: 440px; background: var(--card); border: 1px solid var(--card-border); border-radius: 12px;
+    padding: 32px 24px; text-align: center;
+  }
+  .lede { margin: 0 0 24px; color: var(--dimmed); }
+  .big {
+    display: block; width: 100%; padding: 18px 20px; border-radius: 10px; border: 0; font: inherit;
+    font-size: 1.25rem; font-weight: 600; text-decoration: none; line-height: 1.3;
+  }
+  a.big { background: var(--btn); color: var(--btn-text); }
+  a.big:hover { background: var(--btn-hover); }
+  .big.wait { background: var(--wait-bg); color: var(--wait); }
+  .big.down, .big.check { background: var(--down-bg); color: var(--down); }
+  .big.check { background: transparent; color: var(--dimmed); border: 1px dashed var(--card-border); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .since { margin: 14px 0 0; font-size: 0.8125rem; color: var(--dimmed); min-height: 1.3em; }
+  @media (max-width: 380px) { .tagline { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1 class="wordmark">EARL</h1>
+  <div class="tagline"><div>EXAFS Agent for</div><div>Refinement &amp; Learning</div></div>
+</header>
+<main>
+  <div class="card">
+    <p class="lede">EXAFS fitting at SLAC, running on S3DF.</p>
+    <div id="slot" aria-live="polite"><div class="big check">Checking where EARL is…</div></div>
+    <p class="since" id="since"></p>
+  </div>
+</main>
+<script>
+(function () {
+  var STATUS = "https://stetef.github.io/earl-status/earl-link.json";
+  var RESTART_STALE_MS = 2 * 3600 * 1000;  // "restarting" for over 2 h reads as down
+  var slot = document.getElementById("slot"), sinceEl = document.getElementById("since");
+  var timer = null;
+
+  function fmt(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return "";
+    return d.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+  function box(cls, text) {
+    var el = document.createElement("div");
+    el.className = "big " + cls; el.textContent = text;
+    return el;
+  }
+  function show(el, small) {
+    slot.replaceChildren(el);
+    sinceEl.textContent = small || "";
+  }
+  function poll(ms) { clearTimeout(timer); timer = setTimeout(load, ms); }
+
+  function render(s) {
+    var now = Date.now();
+    var since = s && s.since ? fmt(s.since) : "";
+    var ends = s && s.ends_at ? Date.parse(s.ends_at) : NaN;
+    // only ever link to the S3DF OnDemand host
+    var okUrl = s && typeof s.url === "string" && /^https:\/\/s3df\.slac\.stanford\.edu\/[^?#\s]*$/.test(s.url);
+    if (s && s.status === "up" && okUrl && !(ends <= now)) {
+      var a = document.createElement("a");
+      a.className = "big"; a.href = s.url; a.textContent = "Open EARL";
+      show(a, (since ? "Up since " + since : "") + (isNaN(ends) ? "" : " · until " + fmt(s.ends_at)));
+      poll(10 * 60 * 1000);
+    } else if (s && s.status === "restarting" && !(now - Date.parse(s.since) > RESTART_STALE_MS)) {
+      show(box("wait", "EARL is restarting — try again in 5 min"), since ? "Restarting since " + since : "");
+      poll(60 * 1000);
+    } else {
+      show(box("down", "EARL is currently down"), since ? "Since " + since : "");
+      poll(2 * 60 * 1000);
+    }
+  }
+
+  function load() {
+    fetch(STATUS + "?t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(render)
+      .catch(function () {
+        show(box("check", "Can’t check EARL’s status right now — try again in a minute"), "");
+        poll(60 * 1000);
+      });
+  }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) load(); });
+  load();
+})();
+</script>
+</body>
+</html>
