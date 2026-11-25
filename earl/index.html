@@ -119,8 +119,17 @@
     if (s && s.status === "up" && okUrl && !(ends <= now)) {
       var a = document.createElement("a");
       a.className = "big"; a.href = s.url; a.textContent = "Open EARL";
+      // the page may be minutes old: check again on click, so a switch in progress shows "restarting", not a dead node
+      a.addEventListener("click", function (e) {
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        fetch(STATUS + "?t=" + Date.now(), { cache: "no-store" })
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+          .then(function (n) { if (n && n.status === "up" && n.url === s.url) location.href = s.url; else render(n); })
+          .catch(function () { location.href = s.url; });
+      });
       show(a, (since ? "Up since " + since : "") + (isNaN(ends) ? "" : " · until " + fmt(s.ends_at)));
-      poll(10 * 60 * 1000);
+      poll(60 * 1000);
     } else if (s && s.status === "restarting" && !(now - Date.parse(s.since) > RESTART_STALE_MS)) {
       show(box("wait", "EARL is restarting — try again in 5 min"), since ? "Restarting since " + since : "");
       poll(60 * 1000);
